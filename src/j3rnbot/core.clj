@@ -17,6 +17,7 @@
 (def nick_length (count nick))
 (def pass (get secrets "bot_pass"))
 (def master "j3rn")
+(def channels [ "#osuosc-hangman" "#cwdg" ])
 
 ; SendGrid
 (def api_user (get secrets "sendgrid_user"))
@@ -69,5 +70,6 @@
   ; Connnect to IRC
   (def connection (connect host port nick :callbacks {:privmsg callback}))
   (identify connection pass)
-  (join connection "#osuosc-hangman"))
-  (println "Connected!")
+  (doseq [channel channels]
+    (join connection channel)
+    (println "Joined " channel)))
