@@ -29,6 +29,7 @@
 
 ; Respond to user's request
 (defn obey-user [irc args command]
+  (def sender (get args :nick))
   (case command
     ("hello" "hello!") (reply irc args (string/join " " ["Hello," sender]))
     ("how is master?") (reply irc args
@@ -55,13 +56,13 @@
   ; Debugging
   (println sender "said" text)
   ; Test if I can be the subject
-  (def subject (first (string/split text #" ")))
+  (def tokens (string/split text #" "))
+  (def subject (first tokens))
   (if (< nick_length (count subject))
     ; Test if I am the subject
-    (if (= (subs subject 0 nick_length) (string/lower-case nick))
+    (if (= subject (string/lower-case (string/join "" nick ":")))
       (do
-        (println "They're talking to me!")
-        (def command (parse-command text))
+        (def command (string/join " " (rest tokens)))
         (println "I have been tasked with" command)
         (if (= sender master)
           (obey-master irc args command)
