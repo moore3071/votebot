@@ -23,25 +23,30 @@
 (def api_user (get secrets "sendgrid_user"))
 (def api_key (get secrets "sendgrid_pass"))
 
-; Respond to master's request
-(defn obey-master [irc args command]
-  (case command
-    "hello"
-      (reply irc args "Hello, master")
-    (reply irc args "I can't do that for you, J3RN")))
+; Master state
+(def master_state "present")
+(def master_mood "unknown")
 
 ; Respond to user's request
 (defn obey-user [irc args command]
   (case command
+    ("hello" "hello!") (reply irc args (string/join " " ["Hello," sender]))
+    ("how is master?") (reply irc args
+                              (string/join " " ["He is", master_mood]))
+    ("where is master?") (reply irc args
+                                (string/join " " [ "Master is" master_state]))
     (reply irc args "No!")))
 
-; Simply parse out the "J3RNBOT" part
-(defn parse-command [text]
-  (if (and
-        (> (count text) (+ 1 nick_length))
-        (= (.charAt text nick_length) \:))
-    (string/trim (subs text (+ 1 nick_length)))
-    (string/trim (subs text nick_length))))
+; Respond to master's request
+(defn obey-master [irc args command & args]
+  (case command
+    "leaving" (do
+                (def master_mood "away")
+                (reply irc args "Goodbye, master"))
+    "back" (do
+             (def master_state "present")
+             (reply irc args "Hello again, master"))
+    (obey-user irc args command)))
 
 ; Message posted callback
 (defn callback [irc args]
