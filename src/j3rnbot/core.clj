@@ -24,28 +24,33 @@
 (def api_key (get secrets "sendgrid_pass"))
 
 ; Set  state
-(def state (atom {:states [], :presence [], :pizza_count {}})
+(def state (atom {:states [], :presence [], :pizza_count {}}))
 
 ; Respond to user's request
 (defn obey-user [irc args command sender]
-  (case command
-    ([ "hello" ] [ "hello!" ] ["hi"] ["hi!"]) (reply irc args
-                                      (string/join " " ["Hello," sender]))
-    ([ "how" "is" "master?" ]) (reply irc args
-                                      (string/join " " ["He is", master_mood]))
-    ([ "where" "is" "master?" ]) (reply irc args
-                                        (string/join " " [ "Master is" master_state]))
-    (reply irc args "I don't know how to do that..."))))
+  (case (first command)
+    ("hello" "hello!" "hi" "hi!")
+      (reply irc args (string/join " " ["Hello," sender]))
+    ("beep" "boop")
+      (reply irc args "boop")
+    ("help" "halp")
+      (do
+        (reply irc args "Currently: I support:")
+        (reply irc args "hello")
+        (reply irc args "beep")
+        (reply irc args "halp")
+        (reply irc args "More is coming soon!"))
+    (reply irc args "I don't know how to do that...")))
 
-(defn vote [flavor]
-  (if (contains? (keys (get state 2)) flavor)
-    (reset! state (update-in @state []))
-    (reset! state )))
+; (defn vote [flavor]
+;   (if (contains? (keys (get state 2)) flavor)
+;     (reset! state (update-in @state []))
+;     (reset! state )))
 
 ; Respond to master's request
 (defn obey-master [irc args command]
   (case (first command)
-    "vote" (vote (get command 1))
+    ; "vote" (vote (get command 1))
     "leaving" ()
     "back" ()
     (obey-user irc args command master)))
@@ -67,7 +72,7 @@
         (println "I have been tasked with" command)
         (if (= sender master)
           (obey-master irc args command)
-          (obey-user irc args command)))))))
+          (obey-user irc args command))))))
 
 ; Main method
 (defn start []
