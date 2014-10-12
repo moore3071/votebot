@@ -23,50 +23,51 @@
 (def api_user (get secrets "sendgrid_user"))
 (def api_key (get secrets "sendgrid_pass"))
 
-; Master state
-(def master_state "present")
-(def master_mood "unknown")
+; Set  state
+(def state (atom {:states [], :presence [], :pizza_count {}})
 
 ; Respond to user's request
-(defn obey-user [irc args command]
-  (def sender (get args :nick))
+(defn obey-user [irc args command sender]
   (case command
-    ("hello" "hello!") (reply irc args (string/join " " ["Hello," sender]))
-    ("how is master?") (reply irc args
-                              (string/join " " ["He is", master_mood]))
-    ("where is master?") (reply irc args
-                                (string/join " " [ "Master is" master_state]))
-    (reply irc args "No!")))
+    ([ "hello" ] [ "hello!" ] ["hi"] ["hi!"]) (reply irc args
+                                      (string/join " " ["Hello," sender]))
+    ([ "how" "is" "master?" ]) (reply irc args
+                                      (string/join " " ["He is", master_mood]))
+    ([ "where" "is" "master?" ]) (reply irc args
+                                        (string/join " " [ "Master is" master_state]))
+    (reply irc args "I don't know how to do that..."))))
+
+(defn vote [flavor]
+  (if (contains? (keys (get state 2)) flavor)
+    (reset! state (update-in @state []))
+    (reset! state )))
 
 ; Respond to master's request
-(defn obey-master [irc args command & args]
-  (case command
-    "leaving" (do
-                (def master_mood "away")
-                (reply irc args "Goodbye, master"))
-    "back" (do
-             (def master_state "present")
-             (reply irc args "Hello again, master"))
-    (obey-user irc args command)))
+(defn obey-master [irc args command]
+  (case (first command)
+    "vote" (vote (get command 1))
+    "leaving" ()
+    "back" ()
+    (obey-user irc args command master)))
 
 ; Message posted callback
 (defn callback [irc args]
-  (def sender (string/lower-case(get args :nick)))
-  (def text (string/lower-case(get args :text)))
-  ; Debugging
-  (println sender "said" text)
-  ; Test if I can be the subject
-  (def tokens (string/split text #" "))
-  (def subject (first tokens))
-  (if (< nick_length (count subject))
-    ; Test if I am the subject
-    (if (= subject (string/lower-case (string/join "" nick ":")))
-      (do
-        (def command (string/join " " (rest tokens)))
+  (let [{sender :nick
+        text :text}
+        (string/lower-case args)
+        tokens (string/split text #" ")]
+
+    ; Debugging
+    (println sender "said" text)
+
+    (let [subject (first tokens)
+          command (rest tokens)]
+      ; Test if I am the subject
+      (if (= subject (string/lower-case (string/join "" [nick ":"])))
         (println "I have been tasked with" command)
         (if (= sender master)
           (obey-master irc args command)
-          (obey-user irc args command))))))
+          (obey-user irc args command)))))))
 
 ; Main method
 (defn start []
