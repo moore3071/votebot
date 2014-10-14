@@ -30,7 +30,7 @@
 (defn obey-user [irc args command sender]
   (case (first command)
     ("hello" "hello!" "hi" "hi!")
-      (reply irc args (string/join " " ["Hello," sender]))
+      (reply irc args (str "Hello, " sender))
     ("beep" "boop")
       (reply irc args "boop")
     ("help" "halp")
@@ -39,6 +39,7 @@
         (reply irc args "More is coming soon!"))
     (reply irc args "I don't know how to do that...")))
 
+; Unfinished
 ; (defn vote [flavor]
 ;   (if (contains? (keys (get state 2)) flavor)
 ;     (reset! state (update-in @state []))
@@ -48,12 +49,15 @@
 (defn obey-master [irc args command]
   (case (first command)
     ; "vote" (vote (get command 1))
+    "join" (let [channel (get command 1)]
+             (join irc channel)
+             (reply irc args (str "Joined " channel)))
     (obey-user irc args command master)))
 
 ; Message posted callback
 (defn callback [irc args]
   (let [sender (string/lower-case (:nick args))
-        tokens (string/split (string/lower-case (:text args)) #" ")]
+        tokens (vec (string/split (string/lower-case (:text args)) #" "))]
 
     ; Debugging
     (println sender "said" (string/join " " tokens))
@@ -61,12 +65,12 @@
     (let [subject (first tokens)
           command (rest tokens)]
       ; Test if I am the subject
-      (if (= subject (string/lower-case (string/join "" [nick ":"])))
+      (if (= subject (string/lower-case (str nick ":")))
         (do
           (println "I have been tasked with" command)
           (if (= sender master)
             (obey-master irc args command)
-            (obey-user irc args command)))))))
+            (obey-user irc args command sender)))))))
 
 ; Main method
 (defn start []
