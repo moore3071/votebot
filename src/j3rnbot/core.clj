@@ -17,7 +17,7 @@
 (def nick_length (count nick))
 (def pass (get secrets "bot_pass"))
 (def master "j3rn")
-(def channels [ "#osuosc-hangman" "#cwdg" ])
+(def channels [ "#osuosc-hangman" ])
 
 ; SendGrid
 (def api_user (get secrets "sendgrid_user"))
@@ -35,10 +35,7 @@
       (reply irc args "boop")
     ("help" "halp")
       (do
-        (reply irc args "Currently: I support:")
-        (reply irc args "hello")
-        (reply irc args "beep")
-        (reply irc args "halp")
+        (reply irc args "Currently, I support: hello beep halp")
         (reply irc args "More is coming soon!"))
     (reply irc args "I don't know how to do that...")))
 
@@ -51,28 +48,25 @@
 (defn obey-master [irc args command]
   (case (first command)
     ; "vote" (vote (get command 1))
-    "leaving" ()
-    "back" ()
     (obey-user irc args command master)))
 
 ; Message posted callback
 (defn callback [irc args]
-  (let [{sender :nick
-        text :text}
-        (string/lower-case args)
-        tokens (string/split text #" ")]
+  (let [sender (string/lower-case (:nick args))
+        tokens (string/split (string/lower-case (:text args)) #" ")]
 
     ; Debugging
-    (println sender "said" text)
+    (println sender "said" (string/join " " tokens))
 
     (let [subject (first tokens)
           command (rest tokens)]
       ; Test if I am the subject
       (if (= subject (string/lower-case (string/join "" [nick ":"])))
-        (println "I have been tasked with" command)
-        (if (= sender master)
-          (obey-master irc args command)
-          (obey-user irc args command))))))
+        (do
+          (println "I have been tasked with" command)
+          (if (= sender master)
+            (obey-master irc args command)
+            (obey-user irc args command)))))))
 
 ; Main method
 (defn start []
