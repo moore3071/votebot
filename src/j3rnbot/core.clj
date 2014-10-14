@@ -63,11 +63,11 @@
     (println sender "said" (string/join " " tokens))
 
     (let [subject (first tokens)
-          command (rest tokens)]
+          command (vec (rest tokens))]
       ; Test if I am the subject
       (if (= subject (string/lower-case (str nick ":")))
         (do
-          (println "I have been tasked with" command)
+          (println "I have been tasked with \"" command "\"")
           (if (= sender master)
             (obey-master irc args command)
             (obey-user irc args command sender)))))))
