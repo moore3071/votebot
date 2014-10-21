@@ -69,6 +69,7 @@
              (join irc channel)
              (reply irc args (str "Joined " channel)))
     "vote" (vote (get command 1))
+    "votes" (reply irc args (vote-string (keys (get @state :pizza_count))))
     "clear" (clear-votes)
     (obey-user irc args command master)))
 
