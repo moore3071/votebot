@@ -37,6 +37,7 @@
       (do
         (reply irc args "Currently, I support: hello beep halp")
         (reply irc args "More is coming soon!"))
+    ("votes") (reply irc args (vote-string (keys (get @state :pizza_count))))
     (reply irc args "I don't know how to do that...")))
 
 ; If it is not voted for, vote for it
@@ -69,7 +70,6 @@
              (join irc channel)
              (reply irc args (str "Joined " channel)))
     "vote" (vote (get command 1))
-    "votes" (reply irc args (vote-string (keys (get @state :pizza_count))))
     "clear" (clear-votes)
     (obey-user irc args command master)))
 
