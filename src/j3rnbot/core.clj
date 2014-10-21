@@ -24,7 +24,7 @@
 (def api_key (get secrets "sendgrid_pass"))
 
 ; Set  state
-(def state (atom {:states [], :presence [], :pizza_count {}}))
+(def state (atom {:pizza_count {}}))
 
 ; Respond to user's request
 (defn obey-user [irc args command sender]
@@ -39,11 +39,27 @@
         (reply irc args "More is coming soon!"))
     (reply irc args "I don't know how to do that...")))
 
-; Unfinished
-; (defn vote [flavor]
-;   (if (contains? (keys (get state 2)) flavor)
-;     (reset! state (update-in @state []))
-;     (reset! state )))
+; If it is not voted for, vote for it
+; If it has been voted for, increment the votes
+(defn vote [flavor]
+  (if (contains? (get @state :pizza_count) flavor)
+    (reset! state (update-in @state [:pizza_count flavor] inc))
+    (reset! state (assoc-in @state [:pizza_count flavor] 1))))
+
+; Clear all votes from the state
+(defn clear-votes []
+  (reset! state (dissoc @state :pizza_count)))
+
+; Compose a string summarizing the votes
+; TODO Should *not* depend on state, dammit
+(defn vote-string [pizza_keys]
+  (if (= (count pizza_keys) 0)
+    ""
+    (let [this_key (first pizza_keys)]
+      (reduce
+        str
+        (str this_key ":" (get-in @state [:pizza_count this_key]) " ")
+        (vote-string (rest pizza_keys))))))
 
 ; Respond to master's request
 (defn obey-master [irc args command]
@@ -52,6 +68,8 @@
     "join" (let [channel (get command 1)]
              (join irc channel)
              (reply irc args (str "Joined " channel)))
+    "vote" (vote (get command 1))
+    "clear" (clear-votes)
     (obey-user irc args command master)))
 
 ; Message posted callback
