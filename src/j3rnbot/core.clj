@@ -26,20 +26,6 @@
 ; Set  state
 (def state (atom {:pizza_count {}}))
 
-; Respond to user's request
-(defn obey-user [irc args command sender]
-  (case (first command)
-    ("hello" "hello!" "hi" "hi!")
-      (reply irc args (str "Hello, " sender))
-    ("beep" "boop")
-      (reply irc args "boop")
-    ("help" "halp")
-      (do
-        (reply irc args "Currently, I support: hello beep halp")
-        (reply irc args "More is coming soon!"))
-    ("votes") (reply irc args (vote-string (keys (get @state :pizza_count))))
-    (reply irc args "I don't know how to do that...")))
-
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
 (defn vote [flavor]
@@ -61,6 +47,20 @@
         str
         (str this_key ":" (get-in @state [:pizza_count this_key]) " ")
         (vote-string (rest pizza_keys))))))
+
+; Respond to user's request
+(defn obey-user [irc args command sender]
+  (case (first command)
+    ("hello" "hello!" "hi" "hi!")
+      (reply irc args (str "Hello, " sender))
+    ("beep" "boop")
+      (reply irc args "boop")
+    ("help" "halp")
+      (do
+        (reply irc args "Currently, I support: hello beep halp")
+        (reply irc args "More is coming soon!"))
+    ("votes") (reply irc args (vote-string (keys (get @state :pizza_count))))
+    (reply irc args "I don't know how to do that...")))
 
 ; Respond to master's request
 (defn obey-master [irc args command]
