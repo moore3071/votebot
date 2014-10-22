@@ -66,10 +66,14 @@
 (defn obey-master [irc args command]
   (case (first command)
     ; "vote" (vote (get command 1))
-    "join" (let [channel (get command 1)]
-             (join irc channel)
-             (reply irc args (str "Joined " channel)))
-    "vote" (vote (get command 1))
+    "join"
+      (let [channel (get command 1)]
+        (join irc channel)
+        (reply irc args (str "Joined " channel)))
+    "vote"
+      (do
+        (vote (get command 1))
+        (reply irc args (vote-string (keys (get @state :pizza_count)))))
     "clear" (clear-votes)
     (obey-user irc args command master)))
 
