@@ -28,25 +28,24 @@
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
-(defn vote [flavor]
+(defn vote! [flavor]
   (if (contains? (get @state :pizza_count) flavor)
     (reset! state (update-in @state [:pizza_count flavor] inc))
     (reset! state (assoc-in @state [:pizza_count flavor] 1))))
 
 ; Clear all votes from the state
-(defn clear-votes []
+(defn clear-votes! []
   (reset! state (dissoc @state :pizza_count)))
 
 ; Compose a string summarizing the votes
-; TODO Should *not* depend on state, dammit
-(defn vote-string [pizza_keys]
+(defn vote-string [pizza_keys pizza_votes]
   (if (= (count pizza_keys) 0)
     ""
     (let [this_key (first pizza_keys)]
       (reduce
         str
-        (str this_key ":" (get-in @state [:pizza_count this_key]) " ")
-        (vote-string (rest pizza_keys))))))
+        (str this_key ":" (get-in pizza_votes this_key) " ")
+        (vote-string (rest pizza_keys) pizza_votes)))))
 
 ; Respond to user's request
 (defn obey-user [irc args command sender]
@@ -57,9 +56,12 @@
       (reply irc args "boop")
     ("help" "halp")
       (do
-        (reply irc args "Currently, I support: hello beep halp")
+        (reply irc args "Currently, I support: hello beep halp votes")
         (reply irc args "More is coming soon!"))
-    ("votes") (reply irc args (vote-string (keys (get @state :pizza_count))))
+    ("votes")
+      (let [pizza_keys (keys (get @state :pizza_count))
+            pizza_votes (get @state :pizza_count)]
+        (reply irc args (vote-string pizza_keys pizza_votes)))
     (reply irc args "I don't know how to do that...")))
 
 ; Respond to master's request
@@ -72,9 +74,9 @@
         (reply irc args (str "Joined " channel)))
     "vote"
       (do
-        (vote (get command 1))
+        (vote! (get command 1))
         (reply irc args (vote-string (keys (get @state :pizza_count)))))
-    "clear" (clear-votes)
+    "clear" (clear-votes!)
     (obey-user irc args command master)))
 
 ; Message posted callback
