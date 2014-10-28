@@ -38,14 +38,14 @@
   (reset! state (dissoc @state :pizza_count)))
 
 ; Compose a string summarizing the votes
-(defn vote-string [pizza_keys pizza_votes]
-  (if (= (count pizza_keys) 0)
+(defn vote-string [pizza_votes]
+  (if (= (count pizza_votes) 0)
     ""
-    (let [this_key (first pizza_keys)]
+    (let [this_key (first (keys pizza_votes))]
       (reduce
         str
         (str this_key ":" (get-in pizza_votes this_key) " ")
-        (vote-string (rest pizza_keys) pizza_votes)))))
+        (vote-string (dissoc pizza_votes this_key))))))
 
 ; Respond to user's request
 (defn obey-user [irc args command sender]
@@ -59,9 +59,8 @@
         (reply irc args "Currently, I support: hello beep halp votes")
         (reply irc args "More is coming soon!"))
     ("votes")
-      (let [pizza_keys (keys (get @state :pizza_count))
-            pizza_votes (get @state :pizza_count)]
-        (reply irc args (vote-string pizza_keys pizza_votes)))
+      (let [pizza_votes (get @state :pizza_count)]
+        (reply irc args (vote-string pizza_votes)))
     (reply irc args "I don't know how to do that...")))
 
 ; Respond to master's request
@@ -75,9 +74,8 @@
     "vote"
       (do
         (vote! (get command 1))
-        (let [pizza_keys (keys (get @state :pizza_count))
-              pizza_votes (get @state :pizza_count)]
-          (reply irc args (vote-string pizza_keys pizza_votes))))
+        (let [pizza_votes (get @state :pizza_count)]
+          (reply irc args (vote-string pizza_votes))))
     "clear" (clear-votes!)
     (obey-user irc args command master)))
 
