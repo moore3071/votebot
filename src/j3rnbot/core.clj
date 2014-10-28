@@ -44,7 +44,7 @@
     (let [this_key (first (keys pizza_votes))]
       (reduce
         str
-        (str this_key ":" (get-in pizza_votes this_key) " ")
+        (str this_key ": " (get pizza_votes this_key) " ")
         (vote-string (dissoc pizza_votes this_key))))))
 
 ; Respond to user's request

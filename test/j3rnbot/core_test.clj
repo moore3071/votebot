@@ -43,7 +43,7 @@
 (deftest test-vote-string
   (is
     (vote-string {"pep" 2 "cheese" 1})
-    "pep:2 cheese:1 "))
+    "pep: 2 cheese: 1 "))
 
 (deftest test-vote-string-empty
   (is
