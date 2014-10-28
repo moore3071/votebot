@@ -77,7 +77,7 @@
         (vote! (get command 1))
         (let [pizza_keys (keys (get @state :pizza_count))
               pizza_votes (get @state :pizza_count)]
-          (reply irc args (vote-string pizza_keys pizza_votes)))
+          (reply irc args (vote-string pizza_keys pizza_votes))))
     "clear" (clear-votes!)
     (obey-user irc args command master)))
 
