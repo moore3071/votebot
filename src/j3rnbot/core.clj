@@ -19,10 +19,6 @@
 (def master "j3rn")
 (def channels [ "#osuosc-hangman" ])
 
-; SendGrid
-(def api_user (get secrets "sendgrid_user"))
-(def api_key (get secrets "sendgrid_pass"))
-
 ; Set  state
 (def state (atom {:pizza_count {}}))
 
@@ -99,9 +95,6 @@
 
 ; Main method
 (defn start []
-  ; Authenticate with SendGrid
-  (def auth {:api_user api_user :api_key api_key})
-
   ; Connnect to IRC
   (def connection (connect host port nick :callbacks {:privmsg callback}))
   (identify connection pass)
