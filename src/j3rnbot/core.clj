@@ -3,7 +3,8 @@
     [irclj.core :refer :all]
     [clojure.pprint :refer :all]
     [clojure.data.json :as json]
-    [clojure.string :as string]))
+    [clojure.string :as string]
+    [clojure.core.match]))
 
 ; Load secrets
 (def secrets
