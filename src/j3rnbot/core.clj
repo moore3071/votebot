@@ -4,21 +4,21 @@
     [clojure.pprint :refer :all]
     [clojure.data.json :as json]
     [clojure.string :as string]
-    [clojure.core.match]))
+    [clojure.core.match :refer (match)]))
 
-; Load secrets
-(def secrets
+; Load settings
+(def settings
   (json/read-str
-    (slurp "secrets.json")))
+    (slurp "settings.json")))
 
 ; Constants
-(def host "irc.freenode.net")
-(def port 6667)
-(def nick "J3RNBOT")
+(def host     (get settings "server"))
+(def port     (get settings "port"))
+(def nick     (get settings "bot_nick"))
 (def nick_length (count nick))
-(def pass (get secrets "bot_pass"))
-(def master "j3rn")
-(def channels [ "#osuosc-hangman" ])
+(def pass     (get settings "bot_pass"))
+(def master   (get settings "master"))
+(def channels (get settings "channels"))
 
 ; Set  state
 (def state (atom {:pizza_count {}}))

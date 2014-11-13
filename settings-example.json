@@ -1,0 +1,8 @@
+{
+  "bot_nick": "MyBot",
+  "bot_pass": "password",
+  "server":   "irc.freenode.net",
+  "port":     6667,
+  "master":   "J3RN",
+  "channels": ["#bottest"]
+}
