@@ -93,7 +93,7 @@
       (if (= subject (string/lower-case (str nick ":")))
         (do
           (println "I have been tasked with \"" command "\"")
-          (if (= sender master)
+          (if (= sender (string/lower-case master))
             (obey-master irc args command)
             (obey-user irc args command sender)))))))
 
