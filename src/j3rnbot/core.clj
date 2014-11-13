@@ -68,6 +68,9 @@
       (let [channel (get command 1)]
         (join irc channel)
         (reply irc args (str "Joined " channel)))
+    "leave"
+      (let [channel (get command 1)]
+        (part irc channel))
     "vote"
       (do
         (vote! (get command 1))
