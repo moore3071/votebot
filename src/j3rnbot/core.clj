@@ -78,11 +78,11 @@
 
 ; Message posted callback
 (defn callback [irc args]
+  ; Debugging
+  (println (str "<" (:nick args) "> " (:text args)))
+
   (let [sender (string/lower-case (:nick args))
         tokens (vec (string/split (string/lower-case (:text args)) #" "))]
-
-    ; Debugging
-    (println sender "said" (string/join " " tokens))
 
     (let [subject (first tokens)
           command (vec (rest tokens))]
