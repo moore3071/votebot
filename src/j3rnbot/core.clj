@@ -45,57 +45,59 @@
         (vote-string (dissoc pizza_votes this_key))))))
 
 ; Respond to user's request
-(defn obey-user [irc args command sender]
-  (case (first command)
-    ("hello" "hello!" "hi" "hi!")
-      (reply irc args (str "Hello, " sender))
-    ("beep" "boop")
-      (reply irc args "boop")
-    ("help" "halp")
-      (do
-        (reply irc args "Currently, I support: hello beep halp votes")
-        (reply irc args "More is coming soon!"))
-    ("votes")
+(defn obey-user [irc args tokens sender]
+  (case (first tokens)
+    (".votes")
       (let [pizza_votes (get @state :pizza_count)]
         (reply irc args (vote-string pizza_votes)))
-    (reply irc args "I don't know how to do that...")))
+    ()))
 
 ; Respond to master's request
-(defn obey-master [irc args command]
-  (case (first command)
-    ; "vote" (vote (get command 1))
-    "join"
-      (let [channel (get command 1)]
+(defn obey-master [irc args tokens]
+  (case (first tokens)
+    ".join"
+      (let [channel (get tokens 1)]
         (join irc channel)
         (reply irc args (str "Joined " channel)))
-    "leave"
-      (let [channel (get command 1)]
+    ".leave"
+      (let [channel (get tokens 1)]
         (part irc channel))
-    "vote"
+    ".vote"
       (do
-        (vote! (get command 1))
+        (vote! (get tokens 1))
         (let [pizza_votes (get @state :pizza_count)]
           (reply irc args (vote-string pizza_votes))))
-    "clear" (clear-votes!)
-    (obey-user irc args command master)))
+    ".clear" (clear-votes!)
+    ".die" (System/exit 0)
+    (obey-user irc args tokens master)))
+
+; Messages directly to me
+(defn respond [irc args tokens]
+  (case (first tokens)
+    ("hello" "hello!" "hi" "hi!") (reply irc args (str "Hello, " (:nick args)))
+    ("beep" "boop") (reply irc args "boop")
+    ("help" "halp")
+      (do
+        (reply irc args "Currently, I support: .votes")
+        (reply irc args "More is coming soon!"))
+    ()))
 
 ; Message posted callback
 (defn callback [irc args]
   ; Debugging
   (println (str "<" (:nick args) "> " (:text args)))
 
+  ; Grab sender and tokens
   (let [sender (string/lower-case (:nick args))
         tokens (vec (string/split (string/lower-case (:text args)) #" "))]
 
-    (let [subject (first tokens)
-          command (vec (rest tokens))]
-      ; Test if I am the subject
-      (if (= subject (string/lower-case (str nick ":")))
-        (do
-          (println "I have been tasked with \"" command "\"")
-          (if (= sender (string/lower-case master))
-            (obey-master irc args command)
-            (obey-user irc args command sender)))))))
+    ; If I am the subject, find response
+    ; Otherwise, determine whether it is master or not and obey
+    (if (= (first tokens) (string/lower-case (str nick ":")))
+      (respond irc args (rest tokens))
+      (if (= sender (string/lower-case master))
+        (obey-master irc args tokens)
+        (obey-user irc args tokens sender)))))
 
 ; Main method
 (defn start []
