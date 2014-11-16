@@ -63,10 +63,11 @@
       (let [channel (get tokens 1)]
         (part irc channel))
     ".vote"
-      (do
-        (vote! (get tokens 1))
-        (let [pizza_votes (get @state :pizza_count)]
-          (reply irc args (vote-string pizza_votes))))
+      (if (not (nil? (get tokens 1)))
+        (do
+          (vote! (get tokens 1))
+          (let [pizza_votes (get @state :pizza_count)]
+            (reply irc args (vote-string pizza_votes)))))
     ".clear" (clear-votes!)
     ".die" (System/exit 0)
     (obey-user irc args tokens master)))
