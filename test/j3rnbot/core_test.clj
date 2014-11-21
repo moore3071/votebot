@@ -49,3 +49,10 @@
   (is
     (vote-string {})
     ""))
+
+(deftest rm-vote
+  (do
+    (vote! "accident")
+    (is (vote-string (get @state :pizza_count)) "accident: 1")
+    (rm-vote! "accident")
+    (is (vote-string (get @state :pizza_count)) "")))

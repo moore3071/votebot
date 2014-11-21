@@ -23,6 +23,10 @@
 ; Set  state
 (def state (atom {:pizza_count {}}))
 
+;;; Create/Read/Delete functionality
+
+;; Impure, heathenous functions
+
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
 (defn vote! [flavor]
@@ -34,6 +38,17 @@
 (defn clear-votes! []
   (reset! state (dissoc @state :pizza_count)))
 
+; Remove a single vote for the given item
+; If the new count is 0, remove it from the count
+(defn rm-vote! [flavor]
+  (if (get-in @state [:pizza_count flavor])
+    (if (= (get-in @state [:pizza_count flavor]) 1)
+      (reset! state (update-in @state [:pizza_count] dissoc flavor))
+      (reset! state (update-in @state [:pizza_count flavor] dec)))
+    "No votes for that item"))
+
+;; Pure functions
+
 ; Compose a string summarizing the votes
 (defn vote-string [pizza_votes]
   (if (= (count pizza_votes) 0)
@@ -43,6 +58,8 @@
         str
         (str this_key ": " (get pizza_votes this_key) " ")
         (vote-string (dissoc pizza_votes this_key))))))
+
+;;; Process revelant commands
 
 ; Respond to user's request
 (defn obey-user [irc args tokens sender]
@@ -68,6 +85,10 @@
           (vote! (get tokens 1))
           (let [pizza_votes (get @state :pizza_count)]
             (reply irc args (vote-string pizza_votes)))))
+    ".rm-vote"
+      (let [votes (get @state :pizza_count)
+            flavor (get tokens 1)]
+        (rm-vote! votes flavor))
     ".clear" (clear-votes!)
     ".die" (System/exit 0)
     (obey-user irc args tokens master)))
@@ -82,6 +103,8 @@
         (reply irc args "Currently, I support: .votes")
         (reply irc args "More is coming soon!"))
     ()))
+
+;;; Callback and start
 
 ; Message posted callback
 (defn callback [irc args]
