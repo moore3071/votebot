@@ -85,7 +85,7 @@
           (vote! (get tokens 1))
           (let [pizza_votes (get @state :pizza_count)]
             (reply irc args (vote-string pizza_votes)))))
-    ".rm-vote"
+    ".rmvote"
       (let [votes (get @state :pizza_count)
             flavor (get tokens 1)]
         (rm-vote! votes flavor))
