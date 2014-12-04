@@ -28,9 +28,6 @@
 (def master   (get settings "master"))
 (def channels (get settings "channels"))
 
-; Set  state
-(def state (atom {:pizza_count {}}))
-
 ;;; Create/Read/Delete functionality
 
 ;; Impure, heathenous functions
