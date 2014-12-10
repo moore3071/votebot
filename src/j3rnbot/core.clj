@@ -23,41 +23,53 @@
 (def master   (get settings "master"))
 (def channels (get settings "channels"))
 
-;;; Create/Read/Delete functionality
+; Database settings
+(def db-name  (get settings "db-name"))
+(def db-user  (get settings "db-user"))
+(def db-pass  (get settings "db-pass"))
+
+; Setup database
+(defdb db (postgres {:db db-name
+                     :user db-user
+                     :password db-pass}))
+
+(defentity users)
+(defentity votes)
+
+;; Pure functions
+
+; Compose a string summarizing the votes
+(defn vote-string []
+  )
 
 ;; Impure, heathenous functions
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
-(defn vote! [flavor]
-  (if (contains? (get @state :pizza_count) flavor)
-    (reset! state (update-in @state [:pizza_count flavor] inc))
-    (reset! state (assoc-in @state [:pizza_count flavor] 1))))
+(defn vote! [nick item]
+  (let [user (select users
+                     (where {:nick nick})
+                     (limit 1))]
+    (if (not user)
+      (if (not (select votes
+                       (where {:user_id (:id user)})))
+        (do
+          (insert votes
+                (values {:user_id (:id user)
+                         :item item}))
+          (vote-string))
+        ("You have already voted!"))
+      ("You are not whitelisted, sorry"))))
 
 ; Clear all votes from the state
 (defn clear-votes! []
-  (reset! state (dissoc @state :pizza_count)))
+  )
 
 ; Remove a single vote for the given item
 ; If the new count is 0, remove it from the count
 (defn rm-vote! [flavor]
-  (if (get-in @state [:pizza_count flavor])
-    (if (= (get-in @state [:pizza_count flavor]) 1)
-      (reset! state (update-in @state [:pizza_count] dissoc flavor))
-      (reset! state (update-in @state [:pizza_count flavor] dec)))
-    "No votes for that item"))
+  )
 
-;; Pure functions
-
-; Compose a string summarizing the votes
-(defn vote-string [pizza_votes]
-  (if (= (count pizza_votes) 0)
-    ""
-    (let [this_key (first (keys pizza_votes))]
-      (reduce
-        str
-        (str this_key ": " (get pizza_votes this_key) " ")
-        (vote-string (dissoc pizza_votes this_key))))))
 
 ;;; Process revelant commands
 
@@ -65,8 +77,7 @@
 (defn obey-user [irc args tokens sender]
   (case (first tokens)
     (".votes")
-      (let [pizza_votes (get @state :pizza_count)]
-        (reply irc args (vote-string pizza_votes)))
+      (reply irc args (vote-string))
     ()))
 
 ; Respond to master's request
@@ -81,14 +92,10 @@
         (part irc channel))
     ".vote"
       (if (not (nil? (get tokens 1)))
-        (do
-          (vote! (get tokens 1))
-          (let [pizza_votes (get @state :pizza_count)]
-            (reply irc args (vote-string pizza_votes)))))
+        (reply irc args (vote! (get tokens 1))))
     ".rm-vote"
-      (let [votes (get @state :pizza_count)
-            flavor (get tokens 1)]
-        (rm-vote! votes flavor))
+      (let [flavor (get tokens 1)]
+        (rm-vote! flavor))
     ".clear" (clear-votes!)
     ".die" (System/exit 0)
     (obey-user irc args tokens master)))
