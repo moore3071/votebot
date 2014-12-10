@@ -1,23 +1,18 @@
 (ns j3rnbot.core
+  (:use
+    [irclj.core]
+    [clojure.pprint]
+    [korma.db]
+    [korma.core :exclude (join)])
   (:require
-    [irclj.core :refer :all]
-    [clojure.pprint :refer :all]
     [clojure.data.json :as json]
     [clojure.string :as string]
-    [clojure.java.jdbc :as j]
     [clojure.core.match :refer (match)]))
 
 ; Load settings
 (def settings
   (json/read-str
     (slurp "settings.json")))
-
-; Setup database
-(def db {:classname "org.postgresql.Driver"
-         :subprotocol "postgresql"
-         :subname (str "//localhost:5432/votebot" )
-         :user "jonathan"
-         :password ""})
 
 ; Constants
 (def host     (get settings "server"))
