@@ -75,10 +75,14 @@
 ; Remove a single vote for the given item
 ; If the new count is 0, remove it from the count
 (defn rm-vote! [nick]
-  (let [user (select users (where {:nick nick}))]
-    (delete votes
+  (let [user (first (select users (where {:nick nick})))]
+    (if user
+      (do
+        (delete votes
           (where {:user_id (:id user)
-                  :old false}))))
+                  :old false}))
+        "Vote deleted")
+      "You are not whitelisted!")))
 
 (defn whitelist! [nick]
   (if (not (first (select users (where {:nick nick}))))
