@@ -36,39 +36,57 @@
 (defentity users)
 (defentity votes)
 
-;; Pure functions
-
 ; Compose a string summarizing the votes
 (defn vote-string []
-  )
-
-;; Impure, heathenous functions
+  (reduce-kv
+    #(str %1 %2 ": " (count %3) " ")
+    ""
+    (group-by :item (select votes
+                            (where {:old false})))))
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
 (defn vote! [nick item]
-  (let [user (select users
-                     (where {:nick nick})
-                     (limit 1))]
-    (if (not user)
-      (if (not (select votes
-                       (where {:user_id (:id user)})))
+  (let [user (first
+               (select users
+                       (where {:nick nick})
+                       (limit 1)))]
+    (if user
+      (if (= (count (select votes
+                            (where {:user_id (:id user)
+                                    :old false})))
+             0)
         (do
           (insert votes
                 (values {:user_id (:id user)
                          :item item}))
           (vote-string))
-        ("You have already voted!"))
-      ("You are not whitelisted, sorry"))))
+        "You have already voted!")
+      "You are not whitelisted, sorry")))
 
 ; Clear all votes from the state
 (defn clear-votes! []
-  )
+  (do
+    (update votes
+            (set-fields {:old true})
+            (where {:old false}))
+    "Votes cleared"))
 
 ; Remove a single vote for the given item
 ; If the new count is 0, remove it from the count
-(defn rm-vote! [flavor]
-  )
+(defn rm-vote! [nick]
+  (let [user (select users (where {:nick nick}))]
+    (delete votes
+          (where {:user_id (:id user)
+                  :old false}))))
+
+(defn whitelist! [nick]
+  (if (not (first (select users (where {:nick nick}))))
+    (do
+      (insert users
+            (values {:nick nick}))
+      (str nick " is now whitelisted"))
+    (str nick " is already whitelisted")))
 
 
 ;;; Process revelant commands
@@ -76,8 +94,13 @@
 ; Respond to user's request
 (defn obey-user [irc args tokens sender]
   (case (first tokens)
-    (".votes")
+    ".votes"
       (reply irc args (vote-string))
+    ".vote"
+      (if (not (nil? (get tokens 1)))
+        (reply irc args (vote! sender (get tokens 1))))
+    ".rm-vote"
+        (rm-vote! sender)
     ()))
 
 ; Respond to master's request
@@ -90,15 +113,12 @@
     ".leave"
       (let [channel (get tokens 1)]
         (part irc channel))
-    ".vote"
-      (if (not (nil? (get tokens 1)))
-        (reply irc args (vote! (get tokens 1))))
-    ".rm-vote"
-      (let [flavor (get tokens 1)]
-        (rm-vote! flavor))
-    ".clear" (clear-votes!)
+    ".whitelist"
+      (let [nick (get tokens 1)]
+        (reply irc args (whitelist! nick)))
+    ".clear" (reply irc args (clear-votes!))
     ".die" (System/exit 0)
-    (obey-user irc args tokens master)))
+    (obey-user irc args tokens (string/lower-case master))))
 
 ; Messages directly to me
 (defn respond [irc args tokens]
@@ -107,7 +127,7 @@
     ("beep" "boop") (reply irc args "boop")
     ("help" "halp")
       (do
-        (reply irc args "Currently, I support: .votes")
+        (reply irc args "Currently, I support: .votes .vote [item] .rm-vote")
         (reply irc args "More is coming soon!"))
     ()))
 
