@@ -56,11 +56,13 @@
                             (where {:user_id (:id user)
                                     :old false})))
              0)
-        (do
-          (insert votes
-                (values {:user_id (:id user)
-                         :item item}))
-          (vote-string))
+        (if (<= (count item))
+          (do
+            (insert votes
+                  (values {:user_id (:id user)
+                           :item item}))
+            (vote-string))
+          "That item's name is too long")
         "You have already voted!")
       "You are not whitelisted, sorry")))
 
@@ -86,10 +88,12 @@
 
 (defn whitelist! [nick]
   (if (not (first (select users (where {:nick nick}))))
-    (do
-      (insert users
-            (values {:nick nick}))
-      (str nick " is now whitelisted"))
+    (if (<= (count nick) 30)
+      (do
+        (insert users
+              (values {:nick nick}))
+        (str nick " is now whitelisted"))
+      "That is nick is wayyyy too long")
     (str nick " is already whitelisted")))
 
 
