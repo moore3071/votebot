@@ -104,7 +104,7 @@
       (if (not (nil? (get tokens 1)))
         (reply irc args (vote! sender (get tokens 1))))
     ".rm-vote"
-        (rm-vote! sender)
+        (reply irc args (rm-vote! sender))
     ()))
 
 ; Respond to master's request
