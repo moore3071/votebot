@@ -56,7 +56,7 @@
                             (where {:user_id (:id user)
                                     :old false})))
              0)
-        (if (<= (count item))
+        (if (<= (count item) 30)
           (do
             (insert votes
                   (values {:user_id (:id user)
