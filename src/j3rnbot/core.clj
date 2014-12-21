@@ -90,8 +90,7 @@
   (if (not (first (select users (where {:nick nick}))))
     (if (<= (count nick) 30)
       (do
-        (insert users
-              (values {:nick nick}))
+        (insert users (values {:nick nick}))
         (str nick " is now whitelisted"))
       "That is nick is wayyyy too long")
     (str nick " is already whitelisted")))
@@ -131,12 +130,12 @@
 ; Messages directly to me
 (defn respond [irc args tokens]
   (case (first tokens)
-    ("hello" "hello!" "hi" "hi!") (reply irc args (str "Hello, " (:nick args)))
-    ("beep" "boop") (reply irc args "boop")
+    ("hello" "hello!" "hi" "hi!")
+      (reply irc args (str "Hello, " (:nick args)))
+    ("beep" "boop")
+      (reply irc args "boop")
     ("help" "halp")
-      (do
-        (reply irc args "Currently, I support: .votes .vote [item] .rm-vote")
-        (reply irc args "More is coming soon!"))
+      (reply irc args "Currently, I support: .votes .vote [item] .rm-vote")
     ()))
 
 ;;; Callback and start
