@@ -38,11 +38,14 @@
 
 ; Compose a string summarizing the votes
 (defn vote-string []
-  (reduce-kv
-    #(str %1 %2 ": " (count %3) " ")
-    ""
-    (group-by :item (select votes
-                            (where {:old false})))))
+  (if (seq (select votes))
+    (reduce-kv
+      #(str %1 %2 ": " (count %3) " ")
+      ""
+      (group-by :item (select votes
+                              (where {:old false}))))
+    "No votes"))
+
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
@@ -123,6 +126,13 @@
     ".whitelist"
       (let [nick (get tokens 1)]
         (reply irc args (whitelist! nick)))
+    ".vote-as"
+      (let [nick (get tokens 1)
+            vote (get tokens 2)]
+        (reply irc args (vote! nick vote)))
+    ".rm-vote-as"
+      (let [nick (get tokens 1)]
+        (reply irc args (rm-vote! nick)))
     ".clear" (reply irc args (clear-votes!))
     ".die" (System/exit 0)
     (obey-user irc args tokens (string/lower-case master))))
