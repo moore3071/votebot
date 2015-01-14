@@ -46,6 +46,17 @@
                               (where {:old false}))))
     "No votes"))
 
+; Count all of the votes
+(defn count-votes []
+  (str
+    ; Get count of votes from DB. If nil (0 votes in DB), return 0
+    (or
+      (get (first (select votes
+                          (where {:old false})
+                          (aggregate (count :*) :count)))
+           :count)
+      0)
+    " votes"))
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
@@ -111,12 +122,8 @@
         (reply irc args (vote! sender (get tokens 1))))
     ".rm-vote"
       (reply irc args (rm-vote! sender))
-    ; Reply with the number of votes. If there are none, reply with '0'
     ".count"
-      (reply irc args
-             (or
-               (get (first (select votes (aggregate (count :*) :count))) :count)
-               0))
+      (reply irc args (count-votes))
     ()))
 
 ; Respond to master's request
