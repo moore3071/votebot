@@ -110,7 +110,13 @@
       (if (not (nil? (get tokens 1)))
         (reply irc args (vote! sender (get tokens 1))))
     ".rm-vote"
-        (reply irc args (rm-vote! sender))
+      (reply irc args (rm-vote! sender))
+    ; Reply with the number of votes. If there are none, reply with '0'
+    ".count"
+      (reply irc args
+             (or
+               (get (first (select votes (aggregate (count :*) :count))) :count)
+               0))
     ()))
 
 ; Respond to master's request
@@ -145,7 +151,7 @@
     ("beep" "boop")
       (reply irc args "boop")
     ("help" "halp")
-      (reply irc args "Currently, I support: .votes .vote [item] .rm-vote")
+      (reply irc args "Currently, I support: .votes, .vote [item], .rm-vote, .count")
     ()))
 
 ;;; Callback and start
