@@ -71,14 +71,16 @@
         (select votes
                 (where {:item item
                         :old false}))))
-    (reduce
-      #(str %1 ", " %2)
-      (map
-        #(:nick %)
-        (select votes
-                (with users)
-                (where {:item item
-                        :old false}))))
+    (str
+      (reduce
+        #(str %1 ", " %2)
+        (map
+          #(:nick %)
+          (select votes
+                  (with users)
+                  (where {:item item
+                          :old false}))))
+      " voted for " item)
     "No votes for that item"))
 
 ; If it is not voted for, vote for it
