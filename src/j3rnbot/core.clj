@@ -33,8 +33,12 @@
                      :user db-user
                      :password db-pass}))
 
-(defentity users)
-(defentity votes)
+(declare users votes)
+
+(defentity users
+  (has-many votes))
+(defentity votes
+  (belongs-to users))
 
 ; Compose a string summarizing the votes
 (defn vote-string []
@@ -51,12 +55,31 @@
   (str
     ; Get count of votes from DB. If nil (0 votes in DB), return 0
     (or
-      (get (first (select votes
-                          (where {:old false})
-                          (aggregate (count :*) :count)))
+      (get
+        (first
+          (select votes
+                  (where {:old false})
+                  (aggregate (count :*) :count)))
            :count)
       0)
     " votes"))
+
+(defn whodunnit [item]
+  (if-not
+    (zero?
+      (count
+        (select votes
+                (where {:item item
+                        :old false}))))
+    (reduce
+      #(str %1 ", " %2)
+      (map
+        #(:nick %)
+        (select votes
+                (with users)
+                (where {:item item
+                        :old false}))))
+    "No votes for that item"))
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
@@ -67,13 +90,13 @@
                        (limit 1)))]
     (if user
       (if (= (count (select votes
-                            (where {:user_id (:id user)
+                            (where {:users_id (:id user)
                                     :old false})))
              0)
         (if (<= (count item) 30)
           (do
             (insert votes
-                  (values {:user_id (:id user)
+                  (values {:users_id (:id user)
                            :item item}))
             (vote-string))
           "That item's name is too long")
@@ -95,7 +118,7 @@
     (if user
       (do
         (delete votes
-          (where {:user_id (:id user)
+          (where {:users_id (:id user)
                   :old false}))
         "Vote deleted")
       "You are not whitelisted!")))
@@ -124,6 +147,8 @@
       (reply irc args (rm-vote! sender))
     ".count"
       (reply irc args (count-votes))
+    ".whodunnit"
+      (reply irc args (whodunnit (get tokens 1)))
     ()))
 
 ; Respond to master's request
