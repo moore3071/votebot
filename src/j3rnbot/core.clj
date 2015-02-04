@@ -131,7 +131,7 @@
       (do
         (insert users (values {:nick nick}))
         (str nick " is now whitelisted"))
-      "That is nick is wayyyy too long")
+      "That nick is wayyyy too long")
     (str nick " is already whitelisted")))
 
 
