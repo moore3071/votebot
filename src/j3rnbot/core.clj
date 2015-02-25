@@ -60,28 +60,50 @@
           (select votes
                   (where {:old false})
                   (aggregate (count :*) :count)))
-           :count)
+        :count)
       0)
     " votes"))
 
 (defn whodunnit [item]
-  (if-not
-    (zero?
-      (count
-        (select votes
-                (where {:item item
-                        :old false}))))
-    (str
-      (reduce
-        #(str %1 ", " %2)
+  (str
+    (or
+      (not-empty
+        (string/join
+          ", "
+          (map
+            :nick
+            (select votes
+                    (with users)
+                    (where {:item item
+                            :old false})))) )
+      "Nobody")
+    " voted for that item"))
+
+(defn whos-voted []
+  (or
+    (not-empty
+      (string/join
+        ", "
         (map
           #(:nick %)
           (select votes
                   (with users)
-                  (where {:item item
-                          :old false}))))
-      " voted for " item)
-    "No votes for that item"))
+                  (where {:old false})))))
+    "Nobody"))
+
+(defn dunnitwho [nick]
+  (or
+    (not-empty
+      (let [user_id (:id (first (select users (where {:nick nick}))))]
+        (if user_id
+          (:item
+            (first
+              (select votes
+                      (where {:old false
+                              :users_id user_id})
+                      (fields :item))))
+          "")))
+    (str nick " has not voted")))
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
@@ -98,8 +120,8 @@
         (if (<= (count item) 30)
           (do
             (insert votes
-                  (values {:users_id (:id user)
-                           :item item}))
+                    (values {:users_id (:id user)
+                             :item item}))
             (vote-string))
           "That item's name is too long")
         "You have already voted!")
@@ -120,8 +142,8 @@
     (if user
       (do
         (delete votes
-          (where {:users_id (:id user)
-                  :old false}))
+                (where {:users_id (:id user)
+                        :old false}))
         "Vote deleted")
       "You are not whitelisted!")))
 
@@ -141,38 +163,42 @@
 (defn obey-user [irc args tokens sender]
   (case (first tokens)
     ".votes"
-      (reply irc args (vote-string))
+    (reply irc args (vote-string))
     ".vote"
-      (if (not (nil? (get tokens 1)))
-        (reply irc args (vote! sender (get tokens 1))))
+    (if (not (nil? (get tokens 1)))
+      (reply irc args (vote! sender (get tokens 1))))
     ".rm-vote"
-      (reply irc args (rm-vote! sender))
+    (reply irc args (rm-vote! sender))
     ".count"
-      (reply irc args (count-votes))
+    (reply irc args (count-votes))
     ".whodunnit"
-      (reply irc args (whodunnit (get tokens 1)))
+    (reply irc args (whodunnit (get tokens 1)))
+    ".whos-voted"
+    (reply irc args (whos-voted))
+    ".item"
+    (reply irc args (dunnitwho (get tokens 1)))
     ()))
 
 ; Respond to master's request
 (defn obey-master [irc args tokens]
   (case (first tokens)
     ".join"
-      (let [channel (get tokens 1)]
-        (join irc channel)
-        (reply irc args (str "Joined " channel)))
+    (let [channel (get tokens 1)]
+      (join irc channel)
+      (reply irc args (str "Joined " channel)))
     ".leave"
-      (let [channel (get tokens 1)]
-        (part irc channel))
+    (let [channel (get tokens 1)]
+      (part irc channel))
     ".whitelist"
-      (let [nick (get tokens 1)]
-        (reply irc args (whitelist! nick)))
+    (let [nick (get tokens 1)]
+      (reply irc args (whitelist! nick)))
     ".vote-as"
-      (let [nick (get tokens 1)
-            vote (get tokens 2)]
-        (reply irc args (vote! nick vote)))
+    (let [nick (get tokens 1)
+          vote (get tokens 2)]
+      (reply irc args (vote! nick vote)))
     ".rm-vote-as"
-      (let [nick (get tokens 1)]
-        (reply irc args (rm-vote! nick)))
+    (let [nick (get tokens 1)]
+      (reply irc args (rm-vote! nick)))
     ".clear" (reply irc args (clear-votes!))
     ".die" (System/exit 0)
     (obey-user irc args tokens (string/lower-case master))))
@@ -181,11 +207,11 @@
 (defn respond [irc args tokens]
   (case (first tokens)
     ("hello" "hello!" "hi" "hi!")
-      (reply irc args (str "Hello, " (:nick args)))
+    (reply irc args (str "Hello, " (:nick args)))
     ("beep" "boop")
-      (reply irc args "boop")
+    (reply irc args "boop")
     ("help" "halp")
-      (reply irc args "Currently, I support: .votes, .vote [item], .rm-vote, .count")
+    (reply irc args "Currently, I support: .votes, .vote [item], .rm-vote, .count")
     ()))
 
 ;;; Callback and start
