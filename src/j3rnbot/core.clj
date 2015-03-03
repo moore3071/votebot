@@ -211,7 +211,7 @@
     ("beep" "boop")
     (reply irc args "boop")
     ("help" "halp")
-    (reply irc args "Currently, I support: .votes, .vote [item], .rm-vote, .count, .whodunnit [item], .whosvoted, .whathaveyoudone")
+    (reply irc args "Currently, I support: .votes, .vote [item], .rm-vote, .count, .whodunnit [item], .whosvoted, .whathaveyoudone [nick]")
     ()))
 
 ;;; Callback and start
