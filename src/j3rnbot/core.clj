@@ -173,12 +173,10 @@
     (reply irc args (count-votes))
     ".whodunnit"
     (reply irc args (whodunnit (get tokens 1)))
-    ".whos-voted"
+    ".whosvoted"
     (reply irc args (whos-voted))
     ".whathaveyoudone"
     (reply irc args (dunnitwho (get tokens 1)))
-    ".halp"
-    (reply irc args ".votes, .vote, .rm-vote, .count, .whodunnit, .whos-voted, .whathaveyoudone")
     ()))
 
 ; Respond to master's request
@@ -213,7 +211,7 @@
     ("beep" "boop")
     (reply irc args "boop")
     ("help" "halp")
-    (reply irc args "Currently, I support: .votes, .vote [item], .rm-vote, .count")
+    (reply irc args "Currently, I support: .votes, .vote [item], .rm-vote, .count, .whodunnit [item], .whosvoted, .whathaveyoudone")
     ()))
 
 ;;; Callback and start
