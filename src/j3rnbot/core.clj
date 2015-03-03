@@ -175,8 +175,10 @@
     (reply irc args (whodunnit (get tokens 1)))
     ".whos-voted"
     (reply irc args (whos-voted))
-    ".item"
+    ".whathaveyoudone"
     (reply irc args (dunnitwho (get tokens 1)))
+    ".halp"
+    (reply irc args ".votes, .vote, .rm-vote, .count, .whodunnit, .whos-voted, .whathaveyoudone")
     ()))
 
 ; Respond to master's request
