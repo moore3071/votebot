@@ -42,12 +42,13 @@
 
 ; Compose a string summarizing the votes
 (defn vote-string []
-  (if (seq (select votes))
-    (reduce-kv
-      #(str %1 %2 ": " (count %3) " ")
-      ""
-      (group-by :item (select votes
-                              (where {:old false}))))
+  (or
+    (not-empty
+      (reduce-kv
+        #(str %1 %2 ": " (count %3) " ")
+        ""
+        (group-by :item (select votes
+                                (where {:old false})))))
     "No votes"))
 
 ; Count all of the votes
