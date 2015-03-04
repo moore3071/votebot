@@ -187,7 +187,7 @@
     (let [channel (get tokens 1)]
       (join irc channel)
       (reply irc args (str "Joined " channel)))
-    ".leave"
+    ".part"
     (let [channel (get tokens 1)]
       (part irc channel))
     ".whitelist"
