@@ -4,5 +4,8 @@
   "server":   "irc.freenode.net",
   "port":     6667,
   "master":   "J3RN",
-  "channels": ["#bottest"]
+  "channels": ["#bottest"],
+  "db-name":  "votebot",
+  "db-user":  "votebot",
+  "db-pass":  "aVeryGoodPassword"
 }
