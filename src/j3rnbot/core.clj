@@ -106,28 +106,6 @@
           "")))
     (str nick " has not voted")))
 
-; If it is not voted for, vote for it
-; If it has been voted for, increment the votes
-(defn vote! [nick item]
-  (let [user (first
-               (select users
-                       (where {:nick nick})
-                       (limit 1)))]
-    (if user
-      (if (= (count (select votes
-                            (where {:users_id (:id user)
-                                    :old false})))
-             0)
-        (if (<= (count item) 30)
-          (do
-            (insert votes
-                    (values {:users_id (:id user)
-                             :item item}))
-            (vote-string))
-          "That item's name is too long")
-        "You have already voted!")
-      "You are not whitelisted, sorry")))
-
 ; Clear all votes from the state
 (defn clear-votes! []
   (do
@@ -147,6 +125,32 @@
                         :old false}))
         "Vote deleted")
       "You are not whitelisted!")))
+
+; If it is not voted for, vote for it
+; If it has been voted for, increment the votes
+(defn vote! [nick item]
+  (let [user (first
+               (select users
+                       (where {:nick nick})
+                       (limit 1)))]
+    (if user
+      (do
+        ; If previous vote, delete
+        (if (not-empty (select votes
+                                (where {:users_id (:id user)
+                                        :old false})))
+          (rm-vote! nick))
+
+        ; Ensure vote is not too long
+        (if (<= (count item) 30)
+          (do
+            (insert votes
+                    (values {:users_id (:id user)
+                             :item item}))
+            (vote-string))
+          "That item's name is too long"))
+      "You are not whitelisted, sorry")))
+
 
 (defn whitelist! [nick]
   (if (not (first (select users (where {:nick nick}))))
