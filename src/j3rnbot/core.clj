@@ -41,125 +41,133 @@
   (belongs-to users))
 
 ; Compose a string summarizing the votes
-(defn vote-string []
-  (or
-    (not-empty
-      (reduce-kv
-        #(str %1 %2 ": " (count %3) " ")
-        ""
-        (group-by :item (select votes
-                                (where {:old false})))))
-    "No votes"))
+(defn vote-string [irc args]
+  (reply irc args
+         (or
+           (not-empty
+             (reduce-kv
+               #(str %1 %2 ": " (count %3) " ")
+               ""
+               (group-by :item (select votes
+                                       (where {:old false})))))
+           "No votes")))
 
 ; Count all of the votes
-(defn count-votes []
-  (str
-    ; Get count of votes from DB. If nil (0 votes in DB), return 0
-    (or
-      (get
-        (first
-          (select votes
-                  (where {:old false})
-                  (aggregate (count :*) :count)))
-        :count)
-      0)
-    " votes"))
+(defn count-votes [irc args]
+  (reply irc args
+         (str
+           ; Get count of votes from DB. If nil (0 votes in DB), return 0
+           (or
+             (get
+               (first
+                 (select votes
+                         (where {:old false})
+                         (aggregate (count :*) :count)))
+               :count)
+             0)
+           " votes")))
 
-(defn whodunnit [item]
-  (str
-    (or
-      (not-empty
-        (string/join
-          ", "
-          (map
-            :nick
-            (select votes
-                    (with users)
-                    (where {:item item
-                            :old false})))) )
-      "Nobody")
-    " voted for that item"))
+(defn whodunnit [irc args item]
+  (reply irc args
+         (str
+           (or
+             (not-empty
+               (string/join
+                 ", "
+                 (map
+                   :nick
+                   (select votes
+                           (with users)
+                           (where {:item item
+                                   :old false})))) )
+             "Nobody")
+           " voted for that item")))
 
-(defn whos-voted []
-  (or
-    (not-empty
-      (string/join
-        ", "
-        (map
-          #(:nick %)
-          (select votes
-                  (with users)
-                  (where {:old false})))))
-    "Nobody"))
+(defn whos-voted [irc args]
+  (reply irc args
+         (or
+           (not-empty
+             (string/join
+               ", "
+               (map
+                 #(:nick %)
+                 (select votes
+                         (with users)
+                         (where {:old false})))))
+           "Nobody")))
 
-(defn dunnitwho [nick]
-  (or
-    (not-empty
-      (let [user_id (:id (first (select users (where {:nick nick}))))]
-        (if user_id
-          (:item
-            (first
-              (select votes
-                      (where {:old false
-                              :users_id user_id})
-                      (fields :item))))
-          "")))
-    (str nick " has not voted")))
+(defn dunnitwho [irc args nick]
+  (reply irc args
+         (or
+           (not-empty
+             (let [user_id (:id (first (select users (where {:nick nick}))))]
+               (if user_id
+                 (:item
+                   (first
+                     (select votes
+                             (where {:old false
+                                     :users_id user_id})
+                             (fields :item))))
+                 (str "User with nick \"" nick "\" not found")))
+             (str nick " has not voted"))))
 
 ; Clear all votes from the state
-(defn clear-votes! []
+(defn clear-votes! [irc args]
   (do
     (update votes
             (set-fields {:old true})
             (where {:old false}))
-    "Votes cleared"))
+    (reply irc args "Votes cleared")))
 
 ; Remove a single vote for the given item
 ; If the new count is 0, remove it from the count
-(defn rm-vote! [nick]
-  (let [user (first (select users (where {:nick nick})))]
-    (if user
-      (do
-        (delete votes
-                (where {:users_id (:id user)
-                        :old false}))
-        "Vote deleted")
-      "You are not whitelisted!")))
+(defn rm-vote! [irc args nick]
+  (reply irc args
+         (let [user (first (select users (where {:nick nick})))]
+           (if user
+             (do
+               (delete votes
+                       (where {:users_id (:id user)
+                               :old false}))
+               "Vote deleted")
+             "You are not whitelisted!"))))
 
 ; If it is not voted for, vote for it
 ; If it has been voted for, increment the votes
-(defn vote! [nick item]
-  (let [user (first
-               (select users
-                       (where {:nick nick})
-                       (limit 1)))]
-    (if user
-      (do
-        ; If previous vote, delete
-        (if (not-empty (select votes
-                               (where {:users_id (:id user)
-                                       :old false})))
-          (rm-vote! nick))
+(defn vote! [irc args nick item]
+  (reply irc args
+         (let [user (first
+                      (select users
+                              (where {:nick nick})
+                              (limit 1)))]
+           (if user
+             (do
+               ; If previous vote, delete
+               (if (not-empty (select votes
+                                      (where {:users_id (:id user)
+                                              :old false})))
+                 (rm-vote! nick))
 
-        ; Ensure vote is not too long
-        (if (<= (count item) 30)
-          (do
-            (insert votes
-                    (values {:users_id (:id user)
-                             :item item}))
-            (vote-string))
-          "That item's name is too long"))
-      "You are not whitelisted, sorry")))
+               ; Ensure vote is not too long
+               (if (<= (count item) 30)
+                 (do
+                   (insert votes
+                           (values {:users_id (:id user)
+                                    :item item}))
+                   (vote-string))
+                 "That item's name is too long"))
+             "You are not whitelisted, sorry"))))
 
 
-(defn whitelist! [nick]
-  (if (not (first (select users (where {:nick nick}))))
-    (if (<= (count nick) 30)
-      (do
-        (insert users (values {:nick nick}))
-        (str nick " is now whitelisted"))
-      "That nick is wayyyy too long")
-    (str nick " is already whitelisted")))
+(defn whitelist! [irc args nick]
+  (reply irc args
+         (if (not (first (select users (where {:nick nick}))))
+           (if (<= (count nick) 30)
+             (do
+               (insert users (values {:nick nick}))
+               (str nick " is now whitelisted"))
+             "That nick is wayyyy too long")
+           (str nick " is already whitelisted"))))
 
 
 ;;; Process revelant commands
