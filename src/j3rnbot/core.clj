@@ -137,8 +137,8 @@
       (do
         ; If previous vote, delete
         (if (not-empty (select votes
-                                (where {:users_id (:id user)
-                                        :old false})))
+                               (where {:users_id (:id user)
+                                       :old false})))
           (rm-vote! nick))
 
         ; Ensure vote is not too long
