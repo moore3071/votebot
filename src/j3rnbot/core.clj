@@ -125,11 +125,13 @@
   (reply irc args
          (let [user (first (select users (where {:nick nick})))]
            (if user
-             (do
-               (delete votes
-                       (where {:users_id (:id user)
-                               :old false}))
-               "Vote deleted")
+             (str
+               "Vote for "
+               (:item
+                 (delete votes
+                         (where {:users_id (:id user)
+                                 :old false})))
+               " deleted")
              "You are not whitelisted!"))))
 
 ; If it is not voted for, vote for it
