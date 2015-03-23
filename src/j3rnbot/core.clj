@@ -109,7 +109,7 @@
                                      :users_id user_id})
                              (fields :item))))
                  (str "User with nick \"" nick "\" not found")))
-             (str nick " has not voted"))))
+             (str nick " has not voted")))))
 
 ; Clear all votes from the state
 (defn clear-votes! [irc args]
@@ -189,7 +189,7 @@
     ".whosvoted"
     (whos-voted irc args)
     ".whathaveyoudone"
-    (dunnitwho irc args (get tokens 1)))
+    (dunnitwho irc args (get tokens 1))
     ()))
 
 ; Respond to master's request
@@ -212,7 +212,7 @@
       (vote! irc args nick vote))
     ".rm-vote-as"
     (let [nick (get tokens 1)]
-      (rm-vote! irc args nick)
+      (rm-vote! irc args nick))
     ".clear" (clear-votes! irc args)
     ".die"
     (do
