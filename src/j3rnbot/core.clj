@@ -193,6 +193,7 @@
       (reply irc args (str "Joined " channel)))
     ".part"
     (let [channel (get tokens 1)]
+      (reply irc args ("Bye!"))
       (part irc channel))
     ".whitelist"
     (let [nick (get tokens 1)]
@@ -205,7 +206,10 @@
     (let [nick (get tokens 1)]
       (reply irc args (rm-vote! nick)))
     ".clear" (reply irc args (clear-votes!))
-    ".die" (System/exit 0)
+    ".die"
+    (do
+      (reply irc args "Goodbye, cruel world!")
+      (System/exit 0))
     (obey-user irc args tokens (string/lower-case master))))
 
 ; Messages directly to me
