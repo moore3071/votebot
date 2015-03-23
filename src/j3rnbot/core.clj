@@ -146,7 +146,7 @@
                (if (not-empty (select votes
                                       (where {:users_id (:id user)
                                               :old false})))
-                 (rm-vote! nick irc args))
+                 (rm-vote! irc args nick))
 
                ; Ensure vote is not too long
                (if (<= (count item) 30)
