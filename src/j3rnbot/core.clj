@@ -176,20 +176,20 @@
 (defn obey-user [irc args tokens sender]
   (case (first tokens)
     ".votes"
-    (reply irc args (vote-string))
+    (vote-string irc args)
     ".vote"
     (if (not (nil? (get tokens 1)))
-      (reply irc args (vote! sender (get tokens 1))))
+      (vote! irc args sender (get tokens 1)))
     ".rmvote"
-    (reply irc args (rm-vote! sender))
+    (rm-vote! irc args sender)
     ".count"
-    (reply irc args (count-votes))
+    (count-votes irc args)
     ".whodunnit"
-    (reply irc args (whodunnit (get tokens 1)))
+    (whodunnit irc args (get tokens 1))
     ".whosvoted"
-    (reply irc args (whos-voted))
+    (whos-voted irc args)
     ".whathaveyoudone"
-    (reply irc args (dunnitwho (get tokens 1)))
+    (dunnitwho irc args (get tokens 1)))
     ()))
 
 ; Respond to master's request
@@ -205,15 +205,15 @@
       (part irc channel))
     ".whitelist"
     (let [nick (get tokens 1)]
-      (reply irc args (whitelist! nick)))
+      (whitelist! irc args nick))
     ".vote-as"
     (let [nick (get tokens 1)
           vote (get tokens 2)]
-      (reply irc args (vote! nick vote)))
+      (vote! irc args nick vote))
     ".rm-vote-as"
     (let [nick (get tokens 1)]
-      (reply irc args (rm-vote! nick)))
-    ".clear" (reply irc args (clear-votes!))
+      (rm-vote! irc args nick)
+    ".clear" (clear-votes! irc args)
     ".die"
     (do
       (reply irc args "Goodbye, cruel world!")
