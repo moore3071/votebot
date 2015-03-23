@@ -154,7 +154,7 @@
                    (insert votes
                            (values {:users_id (:id user)
                                     :item item}))
-                   (vote-string))
+                   (vote-string irc args))
                  "That item's name is too long"))
              "You are not whitelisted, sorry"))))
 
