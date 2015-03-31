@@ -108,8 +108,8 @@
                              (where {:old false
                                      :users_id user_id})
                              (fields :item))))
-                 (str "User with nick \"" nick "\" not found")))
-             (str nick " has not voted")))))
+                 (str "User with nick \"" nick "\" not found"))))
+           (str nick " has not voted"))))
 
 ; Clear all votes from the state
 (defn clear-votes! [irc args]
