@@ -27,6 +27,24 @@ What does it do? It's counts votes. That is all.
 - "beep": Replies "boop"
 - "help": Lists summary of commands
 
+## Setup
+To get Votebot running, you're going to need to set up a PostgreSQL database
+for it.
+
+`varchar` fields should be at least 30 characters long. Any longer than 30
+characters will not hurt, but additional spaces will be wasted.
+
+It should:
+- Have two tables, `users` and `votes`
+  - `users` should have two fields:
+    - `id` field (integer)
+    - `nick` field (varchar)
+  - `votes` should have three fields:
+    - `id` (integer)
+    - `users_id` (integer)
+    - `item` (varchar)
+    - `old` (boolean, default to false)
+
 ## Configuration
 The bot requires a file named `settings.json`. I have included an example file called `settings-example.json`.
 
