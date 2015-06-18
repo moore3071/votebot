@@ -21,6 +21,7 @@ What does it do? It's counts votes. That is all.
 - `.whodunnit [item]`: Says who voted for that item
 - `.whosvoted`: Lists all the people who have voted
 - `.whathaveyoudone [nick]`: Says what the user voted for
+- `.rapsheet`: Lists every item and who has voted for it (one per message)
 
 ### "Responses" (`<nick>: <message>`)
 - "hello": Replies "Hello, <sender>"
