@@ -58,7 +58,7 @@
                                        (with users)
                                        (where {:old false})))]
     (reply irc args
-           (str "* " (key item) ": " (string/join ", " (map :nick (val item))) " *"))))
+           (str "* " (key item) ": " (string/join ", " (map :nick (val item)))))))
 
 ; Count all of the votes
 (defn count-votes [irc args]
