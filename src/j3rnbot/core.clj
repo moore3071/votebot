@@ -52,6 +52,14 @@
                                        (where {:old false})))))
            "No votes")))
 
+;Compose a string summarizing who voted for what
+(defn rapsheet [irc args]
+  (doseq [item (group-by :item (select votes
+                                       (with users)
+                                       (where {:old false})))]
+    (reply irc args
+           (str "* " (key item) ": " (string/join ", " (map :nick (val item))) " *"))))
+
 ; Count all of the votes
 (defn count-votes [irc args]
   (reply irc args
@@ -186,6 +194,8 @@
     (rm-vote! irc args sender)
     ".count"
     (count-votes irc args)
+    ".rapsheet"
+    (rapsheet irc args)
     ".whodunnit"
     (whodunnit irc args (get tokens 1))
     ".whosvoted"
