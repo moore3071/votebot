@@ -200,9 +200,9 @@
     ".rmvote"
     (rm-vote! irc args sender)
     ".count"
+    (count-votes irc args)
     ".rapsheet"
     (rapsheet irc args)
-    (count-votes irc args)
     ".whodunnit"
     (whodunnit irc args (get tokens 1))
     ".whosvoted"
