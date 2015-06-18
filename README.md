@@ -37,13 +37,13 @@ characters will not hurt, but additional spaces will be wasted.
 It should:
 - Have two tables, `users` and `votes`
   - `users` should have two fields:
-    - `id` field (integer)
-    - `nick` field (varchar)
+    - `id` (SERIAL PRIMARY KEY)
+    - `nick` (TEXT NOT NULL)
   - `votes` should have three fields:
-    - `id` (integer)
-    - `users_id` (integer)
-    - `item` (varchar)
-    - `old` (boolean, default to false)
+    - `id` (SERIAL PRIMARY KEY)
+    - `users_id` (INTEGER NOT NULL)
+    - `item` (TEXT NOT NULL)
+    - `old` (BOOLEAN NOT NULL DEFAULT false)
 
 ## Configuration
 The bot requires a file named `settings.json`. I have included an example file called `settings-example.json`.
