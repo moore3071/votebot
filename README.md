@@ -21,11 +21,30 @@ What does it do? It's counts votes. That is all.
 - `.whodunnit [item]`: Says who voted for that item
 - `.whosvoted`: Lists all the people who have voted
 - `.whathaveyoudone [nick]`: Says what the user voted for
+- `.rapsheet`: Lists every item and who has voted for it (one per message)
 
 ### "Responses" (`<nick>: <message>`)
 - "hello": Replies "Hello, <sender>"
 - "beep": Replies "boop"
 - "help": Lists summary of commands
+
+## Setup
+To get Votebot running, you're going to need to set up a PostgreSQL database
+for it.
+
+`varchar` fields should be at least 30 characters long. Any longer than 30
+characters will not hurt, but additional spaces will be wasted.
+
+It should:
+- Have two tables, `users` and `votes`
+  - `users` should have two fields:
+    - `id` (SERIAL PRIMARY KEY)
+    - `nick` (TEXT NOT NULL)
+  - `votes` should have three fields:
+    - `id` (SERIAL PRIMARY KEY)
+    - `users_id` (INTEGER NOT NULL)
+    - `item` (TEXT NOT NULL)
+    - `old` (BOOLEAN NOT NULL DEFAULT false)
 
 ## Configuration
 The bot requires a file named `settings.json`. I have included an example file called `settings-example.json`.

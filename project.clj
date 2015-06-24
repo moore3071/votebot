@@ -1,4 +1,4 @@
-(defproject j3rnbot "0.1.0-SNAPSHOT"
+(defproject j3rnbot "0.2.1"
   :description "A bot for J3RN"
   :url "http://github.com/J3RN/J3RNBOT"
   :license {:name "MIT License"
